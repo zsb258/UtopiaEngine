@@ -4,10 +4,11 @@ public class Artifacts {
 	interface Artifact {
 		void foundByPlayer();
 		void activateArtifact();
+		String getName();
 	}
 
 	private static class ArtifactClass implements Artifact {
-		String name, effect;
+		String name = "Artifact name", effect;
 		int inRegion;
 		boolean found = false;
 		boolean activated = false;
@@ -21,6 +22,11 @@ public class Artifacts {
 		@Override
 		public void activateArtifact() {
 			this.activated = true;
+		}
+
+		@Override
+		public String getName() {
+			return this.name;
 		}
 	}
 

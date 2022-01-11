@@ -3,13 +3,15 @@ package files;
 import gameui.UI;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 public class Player {
-	final static int DOOMSDAY = 15;
+	final private static int DOOMSDAY = 15;
+	final private static Locations.Location HOME = new Locations.Workshop();
 
-	private int location = Locations.RegionIndex.WORKSHOP;
+	private Locations.Location location = HOME;
 	private int hp = PlayerConstants.MAX_HP;
 	private int currDay = 0;
 
@@ -50,12 +52,39 @@ public class Player {
 		public final static int TYPES_OF_TOOLS = 3;
 	}
 
-	Player() {
-//		Arrays.fill(stores, 0);
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		s.append("Player info:").append(System.lineSeparator());
+		s.append("Location: ").append(location.getName()).append(System.lineSeparator());
+		s.append("HP: ").append(hp).append(System.lineSeparator());
+		s.append("Current Day: ").append(currDay).append(System.lineSeparator());
+		s.append("Artifacts: ").append(artifacts).append(System.lineSeparator());
+		s.append("Treasures: ").append(treasures).append(System.lineSeparator());
+		s.append("Components: ").append(Arrays.toString(stores)).append(System.lineSeparator());
+		return s.toString();
 	}
 
-	void search(int location) {
+	Player() {
+		Arrays.fill(stores, 0);
+	}
 
+	boolean setLocation(Locations.Location location) {
+		if (this.location != location) {
+			this.location = location;
+			UI.print(String.format("You are now in %s", this.location.getName()));
+			return true;
+		}
+		UI.print(String.format("You are already in %s", this.location.getName()));
+		return false;
+	}
+
+	Locations.Location getLocation() {
+		return location;
+	}
+
+	void goHome() {
+		this.setLocation(HOME);
 	}
 
 	void receiveDamage(int i) {
@@ -64,7 +93,8 @@ public class Player {
 			// player faints
 			// teleports back to workshop
 			// rest for 6 days to recover to full hp
-			this.hp = -1; // placeholder assignment
+			this.rest(PlayerConstants.MAX_HP);
+			this.goHome();
 		}
 		else if (this.hp < 0) {
 			// player died
@@ -92,7 +122,7 @@ public class Player {
 	void aDayHasPast() {
 		currDay++;
 		if (currDay == DOOMSDAY) {
-			UI.gameFailedPrint();
+			UI.printGameFailed();
 		}
 	}
 
@@ -100,7 +130,7 @@ public class Player {
 		for (int count = 0; count < i; count++) {
 			aDayHasPast();
 		}
-		UI.infoPrint(String.format("%d day(s) has past.%n Days left to Doomsday: %d%n",
+		UI.print(String.format("%d day(s) has past.%nDays left to Doomsday: %d%n",
 				i, DOOMSDAY - currDay));
 	}
 

@@ -1,5 +1,7 @@
 package files;
 
+import gameui.UI;
+
 import java.util.*;
 
 public class Locations {
@@ -9,6 +11,9 @@ public class Locations {
 		void foundComponent(Player player, int num);
 		void foundArtifact(Player player);
 		void foundTreasure(Player player);
+		Monsters.Monster getMonster(int level);
+		String getName();
+		boolean regionSearch();
 	}
 
 	protected static class LocationClass implements Location {
@@ -20,19 +25,23 @@ public class Locations {
 		boolean foundArtifact = false;
 		boolean foundTreasure = false;
 		List<Monsters.Monster> monsters;
-		boolean[] searchTracker = new boolean[MAX_SEARCHES];
+		boolean[] searchTracker = new boolean[Locations.MAX_SEARCHES];
 
 		@Override
 		public void foundComponent(Player player, int num) {
 			for (int i = 0; i < num; i++) {
-				player.getOneComponent(index);
+				player.getOneComponent(component);
 			}
+			UI.print(String.format("You gained %d %s.",
+					num, Player.PlayerConstants.Materials.toName(component)));
 		}
 
 		@Override
 		public void foundArtifact(Player player) {
-			if (artifact != null) {
+			if (!foundArtifact) {
 				player.getArtifact(artifact);
+				foundArtifact = true;
+				UI.print(String.format("You gained Artifact: %s.", artifact.getName()));
 				artifact = null;
 				return;
 			}
@@ -41,9 +50,104 @@ public class Locations {
 
 		@Override
 		public void foundTreasure(Player player) {
-			if (treasure != null) {
+			if (!foundTreasure) {
 				player.getTreasure(treasure);
+				foundTreasure = true;
+				UI.print(String.format("You gained Treasure: %s.", treasure.getName()));
 				treasure = null;
+			}
+		}
+
+		@Override
+		public Monsters.Monster getMonster(int level) {
+			return monsters.get(level - 1);
+		}
+
+		@Override
+		public String getName() {
+			return this.name;
+		}
+
+		@Override
+		public boolean regionSearch() {
+			int currSearch = 0;
+			while (currSearch < MAX_SEARCHES) {
+				singleSearch();
+				if (! UI.readYesNoInput("Do you still want to search in this region?") ) {
+					return false;
+				}
+				currSearch++;
+			}
+			return true;
+		}
+
+		void singleSearch() {
+			Random dice = new Random();
+			char[] grid = emptyResultGrid();
+
+			Scanner in = new Scanner(System.in);
+			for (int rolls = 0; rolls < 3; rolls++) {
+				int firstRoll = dice.nextInt(6) + 1;
+				int secondRoll = dice.nextInt(6) + 1;
+				int firstPos, secondPos;
+
+				while (true) {
+					UI.printSearchGrid(grid);
+					UI.print(String.format("You rolled %d and %d", firstRoll, secondRoll));
+					System.out.println("Please enter two positions to fill grid:");
+
+					firstPos = in.nextInt() - 1;
+					secondPos = in.nextInt() - 1;
+
+					if (firstPos >= 0 && firstPos < 6 && secondPos >= 0 && secondPos < 6) {
+						if (grid[firstPos] == '_' && grid[secondPos] == '_') {
+							break;
+						}
+					}
+					System.out.println("Your inputs are invalid.");
+				}
+
+				grid[firstPos] = (char) (firstRoll + '0');
+				grid[secondPos] = (char) (secondRoll + '0');
+			}
+
+			UI.printSearchGrid(grid);
+			int searchValue = resolveGrid(grid);
+			UI.print(String.format("Your search value is %d.", searchValue));
+			int searchResult = Results.resolveSearchValue(searchValue);
+
+
+			resolveSearchResult(searchValue);
+		}
+
+		char[] emptyResultGrid() {
+			char[] res = new char[6];
+			Arrays.fill(res, '_');
+			return res;
+		}
+
+		int resolveGrid(char[] grid) {
+			int firstNum = (grid[0] - '0') * 100 + (grid[1] - '0') * 10 + (grid[2] - '0');
+			int secondNum = (grid[3] - '0') * 100 + (grid[4] - '0') * 10 + (grid[5] - '0');
+			return firstNum - secondNum;
+		}
+
+		void resolveSearchResult(int searchValue) {
+			int searchResult = Results.resolveSearchValue(searchValue);
+			UI.print(String.format("Your search yields %s.", Results.toName(searchResult)));
+			//noinspection EnhancedSwitchMigration
+			switch (searchResult) {
+				case Results.ENCOUNTER:
+					int encounterLevel = Results.encounterLevel(searchValue);
+					Monsters.Monster enemy = GameData.player.getLocation().getMonster(encounterLevel);
+					enemy.combat();
+					break;
+				case Results.COMPONENT:
+					GameData.player.getLocation().foundComponent(GameData.player, 1);
+					break;
+				case Results.INACTIVE_ARTIFACT:
+					GameData.player.getLocation().foundArtifact(GameData.player);
+					break;
 			}
 		}
 	}
@@ -60,6 +164,12 @@ public class Locations {
 			for (Monsters.Monster monster : monsters) {
 				monster.setLocation(this);
 			}
+			searchTracker[0] = true;
+			searchTracker[1] = true;
+			searchTracker[2] = false;
+			searchTracker[3] = true;
+			searchTracker[4] = false;
+			searchTracker[5] = false;
 		}
 	}
 
@@ -168,7 +278,7 @@ public class Locations {
 			}
 		}
 
-		int encounterLevel(int i) {
+		static int encounterLevel(int i) {
 			if ((i >= 100 && i <= 199) || (i <= -1 && i >= -100)) {
 				return 1;
 			}
@@ -188,79 +298,5 @@ public class Locations {
 		}
 	}
 
-	static int valueToLocation() {
-		return 0;
-	}
-
-	void searchHalebeardPeak() {
-		int currSearch = 0;
-
-	}
-
-	void singleSearch() {
-		Random dice = new Random();
-		char[] grid = emptyResultGrid();
-
-		Scanner in = new Scanner(System.in);
-		for (int rolls = 0; rolls < 3; rolls++) {
-			int firstRoll = dice.nextInt(6) + 1;
-			int secondRoll = dice.nextInt(6) + 1;
-			int firstPos, secondPos;
-
-			while (true) {
-				System.out.println(gridToString(grid));
-				System.out.printf("You rolled %d and %d.%n", firstRoll, secondRoll);
-				System.out.println("Please enter two positions to fill grid:");
-
-				firstPos = inputToGridIndices(in.nextInt());
-				secondPos = inputToGridIndices(in.nextInt());
-
-				if (firstPos >= 0 && firstPos < 6 && secondPos >= 0 && secondPos < 6) {
-					if (grid[firstPos] == '_' && grid[secondPos] == '_') {
-						break;
-					}
-				}
-				System.out.println("Your inputs are invalid.");
-			}
-
-			grid[firstPos] = (char) (firstRoll + '0');
-			grid[secondPos] = (char) (secondRoll + '0');
-		}
-		in.close();
-
-		System.out.println(gridToString(grid));
-		int searchValue = resolveGrid(grid);
-		System.out.printf("Your search value is %d.%n", searchValue);
-		int searchResult = Results.resolveSearchValue(searchValue);
-		System.out.printf("Your search yields %s.%n", Results.toName(searchResult));
-	}
-
-	char[] emptyResultGrid() {
-		char[] res = new char[6];
-		Arrays.fill(res, '_');
-		return res;
-	}
-
-	int inputToGridIndices(int i) {
-		return i - 1;
-	}
-
-	String gridToString(char[] grid) {
-		return String.format("[%c] [%c] [%c]%n(%d) (%d) (%d)%n[%c] [%c] [%c]%n(%d) (%d) (%d)",
-				grid[0], grid[1], grid[2], 1, 2, 3, grid[3], grid[4], grid[5], 4, 5, 6);
-	}
-
-	int resolveGrid(char[] grid) {
-		int firstNum = (grid[0] - '0') * 100 + (grid[1] - '0') * 10 + (grid[2] - '0');
-		int secondNum = (grid[3] - '0') * 100 + (grid[4] - '0') * 10 + (grid[5] - '0');
-		return firstNum - secondNum;
-	}
-
-	public void run() {
-		singleSearch();
-	}
-
-	public static void main(String[] args) {
-		new Locations().run();
-	}
+	public static void main(String[] args) {}
 }

@@ -1,5 +1,7 @@
 package files;
 
+import gameui.UI;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -7,8 +9,8 @@ import java.util.Random;
 public class Monsters {
 	protected interface Monster {
 		void setLocation(Locations.Location location);
-		void combat(Player player);
-		void checkDroppedItem(Player player);
+		void combat();
+		void checkDroppedItem();
 	}
 
 	private static class MonsterClass implements Monster {
@@ -28,33 +30,44 @@ public class Monsters {
 		}
 
 		@Override
-		public void combat(Player player) {
+		public void combat() {
 			Random dice = new Random();
 			boolean combatEnded = false;
-			while (!combatEnded && player.isConscious()) {
+			UI.print(String.format("You encountered a Level %d monster: %s", this.level, this.name));
+			UI.print("Battle started.");
+			while (!combatEnded && GameData.player.isConscious()) {
 				int[] rolls = new int[]{dice.nextInt(6) + 1, dice.nextInt(6) + 1};
+				UI.print(String.format("You rolled %d and %d", rolls[0], rolls[1]));
 				for (int roll : rolls) {
 					if (roll >= monsterAttackRange[0] && roll <= monsterAttackRange[1]) {
-						player.receiveDamage(1);
+						GameData.player.receiveDamage(1);
+						UI.print(String.format("Monster attacked on roll %d and you lose 1 hp.", roll));
+						if (!GameData.player.getLocation().equals(this.locatedAt)) {
+							// player fainted and travelled home
+							break;
+						}
 					}
 					if (roll >= playerAttackRange[0] && roll <= playerAttackRange[1]) {
 						combatEnded = true;
 					}
 				}
 			}
-			checkDroppedItem(player);
+			UI.print("You slayed the monster.");
+			if (GameData.player.isConscious()) {
+				checkDroppedItem();
+			}
 		}
 
 		@Override
-		public void checkDroppedItem(Player player) {
+		public void checkDroppedItem() {
 			int roll = new Random().nextInt(6) + 1;
 			if (roll <= this.level) {
 				// player loots dropped item
 				if (this.hasComponent) {
-					player.getOneComponent(inRegion);
+					locatedAt.foundComponent(GameData.player, 1);
 				}
 				else if (this.hasTreasure) {
-					locatedAt.foundTreasure(player);
+					locatedAt.foundTreasure(GameData.player);
 				}
 			}
 		}
@@ -105,13 +118,14 @@ public class Monsters {
 			Treasures.Treasure treasure;
 			MonsterZeroFive() {
 				this.inRegion = Locations.RegionIndex.ZERO;
-				this.level = 2;
+				this.level = 5;
 				this.name = "The Hollow Giant (S)";
 				this.monsterAttackRange = new int[]{1, 4};
 				this.playerAttackRange = new int[]{6, 6};
 				this.isSpirit = true;
 				this.hasTreasure = true;
 				this.treasure = new Treasures.TreasureZero();
+				this.hasComponent = false;
 			}
 		}
 
