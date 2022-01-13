@@ -1,9 +1,10 @@
-package gameui;
+package files.gameui;
 
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 public class UI {
+	public final static String SEP = System.lineSeparator();
+
 	public static void print(String msg) {
 		immediatePrint(msg);
 		pause(500);
@@ -37,27 +38,4 @@ public class UI {
 		catch (InterruptedException ignored) {}
 	}
 
-	public static boolean readYesNoInput(String msg) {
-		do {
-			print(msg);
-			print("Y/N");
-			char c = new Scanner(System.in).next().charAt(0);
-			if (c == 'Y') return true;
-			if (c == 'N') return false;
-			UI.print("Your input is invalid.");
-		}
-		while (true);
-	}
-
-	public static int readDigitInput(String msg, int min, int max) {
-		do {
-			print(msg);
-			int i = new Scanner(System.in).nextInt();
-			if (i >= min && i <= max) {
-				return i;
-			}
-			UI.print("Your input is invalid.");
-		}
-		while (true);
-	}
 }

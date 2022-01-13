@@ -1,17 +1,15 @@
 package files;
 
-import gameui.UI;
+import files.gameui.UI;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class GameData {
-	protected static List<Locations.Location> gameMap = new ArrayList<>();
-	static Player player;
+	static List<Locations.Location> gameMap = new ArrayList<>();
+	static Player player = new Player();
 
-	GameData() {
-		player = new Player();
+	public GameData() {
 		initialiseLocations();
 	}
 
@@ -25,7 +23,7 @@ public class GameData {
 		gameMap.add(player.getLocation());
 	}
 
-	void start() {
+	public void start() {
 		UI.print("Game started");
 		while (true) {
 			userTravel();
@@ -36,17 +34,23 @@ public class GameData {
 		}
 	}
 
+	void userAction() {
+		int[] actionRange = printActions();
+		int act = Fn.UserInput.readDigitInput("Choose your action: ", actionRange[0], actionRange[1]);
+		// do action
+	}
+
 	void userTravel() {
 		boolean travelled = false;
 		while (!travelled) {
 			printGameMap();
-			int regionIdx = UI.readDigitInput("Choose where to go: ", 1, 7) - 1;
+			int regionIdx = Fn.UserInput.readDigitInput("Choose where to go: ", 1, 7) - 1;
 			travelled = player.setLocation(gameMap.get(regionIdx));
 		}
 	}
 
 	boolean userToSearch() {
-		if (UI.readYesNoInput("Do you want to explore this region?")) {
+		if (Fn.UserInput.readYesNoInput("Do you want to explore this region?")) {
 			return player.getLocation().regionSearch();
 		}
 		return false;
@@ -58,8 +62,13 @@ public class GameData {
 		}
 	}
 
+	int[] printActions() {
+		// to implement
+		return new int[]{};
+	}
+
 	public static void main(String[] args) {
-		GameData G = new GameData();
-		G.start();
+		// test run
+		new GameData().start();
 	}
 }

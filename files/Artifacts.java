@@ -1,5 +1,10 @@
 package files;
 
+import files.Fn.Dice;
+import files.gameui.UI;
+import files.Fn.Grid.ArtifactGrid;
+import files.Fn.UserInput;
+
 public class Artifacts {
 	interface Artifact {
 		void foundByPlayer();
@@ -8,7 +13,8 @@ public class Artifacts {
 	}
 
 	private static class ArtifactClass implements Artifact {
-		String name = "Artifact name", effect;
+		String name = "Artifact name";
+		String effect;
 		int inRegion;
 		boolean found = false;
 		boolean activated = false;
@@ -21,16 +27,21 @@ public class Artifacts {
 
 		@Override
 		public void activateArtifact() {
-			this.activated = true;
+			if (this.activated) {
+				UI.print("The Artifact is already active.");
+				return;
+			}
+			new ArtifactGrid().runActivation();
 		}
 
 		@Override
 		public String getName() {
 			return this.name;
 		}
+
 	}
 
-	protected static class ArtifactZero extends ArtifactClass {
+	static class ArtifactZero extends ArtifactClass {
 		ArtifactZero() {
 			super();
 			name = "Seal of Balance";
@@ -41,7 +52,7 @@ public class Artifacts {
 		}
 	}
 
-	protected static class ArtifactOne extends ArtifactClass {
+	static class ArtifactOne extends ArtifactClass {
 		ArtifactOne() {
 			super();
 			name = "Hermetic Mirror";
@@ -50,7 +61,7 @@ public class Artifacts {
 		}
 	}
 
-	protected static class ArtifactTwo extends ArtifactClass {
+	static class ArtifactTwo extends ArtifactClass {
 		ArtifactTwo() {
 			super();
 			name = "Void Gate";
@@ -59,7 +70,7 @@ public class Artifacts {
 		}
 	}
 
-	protected static class ArtifactThree extends ArtifactClass {
+	static class ArtifactThree extends ArtifactClass {
 		ArtifactThree() {
 			super();
 			name = "Golden Chassis";
@@ -68,7 +79,7 @@ public class Artifacts {
 		}
 	}
 
-	protected static class ArtifactFour extends ArtifactClass {
+	static class ArtifactFour extends ArtifactClass {
 		ArtifactFour() {
 			super();
 			name = "Scrying Lens";
@@ -77,12 +88,21 @@ public class Artifacts {
 		}
 	}
 
-	protected static class ArtifactFive extends ArtifactClass {
+	static class ArtifactFive extends ArtifactClass {
 		ArtifactFive() {
 			super();
 			name = "Crystal Battery";
 			effect = "Spend any three components to recharge one tool belt item";
 			inRegion = Locations.RegionIndex.FIVE;
 		}
+	}
+
+	void run() {
+
+
+	}
+
+	public static void main(String[] args) {
+		new Artifacts().run();
 	}
 }

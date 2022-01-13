@@ -16,33 +16,33 @@ public class Treasures {
 		}
 	}
 
-	protected static class TreasureZero extends TreasureClass {
+	static class TreasureZero extends TreasureClass {
 		String name = "Ice Plate";
 		String effect = "-1 to attack range of all Monsters";
 	}
 
-	protected static class TreasureOne extends TreasureClass {
+	static class TreasureOne extends TreasureClass {
 		String name = "Bracelet of Ios";
 		String effect = "Begin first activation attempt with 1 free energy point";
 	}
 
-	protected static class TreasureTwo extends TreasureClass {
+	static class TreasureTwo extends TreasureClass {
 		String name = "Shimmering Moonlace";
 		String effect = "You may ignore encounters";
 	}
 
-	protected static class TreasureThree extends TreasureClass {
+	static class TreasureThree extends TreasureClass {
 		String name = "Scale of the Infinity Wurm";
 		String effect = "Recover 1 HP each event day";
 	}
 
-	protected static class TreasureFour extends TreasureClass {
+	static class TreasureFour extends TreasureClass {
 		String name = "The Ancient Record";
 		String effect = "Change any one link value to zero (only once per game)";
 		boolean used = false;
 	}
 
-	protected static class TreasureFive extends TreasureClass {
+	static class TreasureFive extends TreasureClass {
 		String name = "The Molten Shard";
 		String effect = "+1 to your attack range";
 	}

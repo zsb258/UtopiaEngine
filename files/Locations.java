@@ -1,13 +1,13 @@
 package files;
 
-import gameui.UI;
+import files.gameui.UI;
 
 import java.util.*;
 
 public class Locations {
 	public final static int MAX_SEARCHES = 6;
 
-	protected interface Location {
+	interface Location {
 		void foundComponent(Player player, int num);
 		void foundArtifact(Player player);
 		void foundTreasure(Player player);
@@ -16,7 +16,7 @@ public class Locations {
 		boolean regionSearch();
 	}
 
-	protected static class LocationClass implements Location {
+	static class LocationClass implements Location {
 		String name;
 		int component;
 		int index;
@@ -73,11 +73,14 @@ public class Locations {
 			int currSearch = 0;
 			while (currSearch < MAX_SEARCHES) {
 				singleSearch();
-				if (! UI.readYesNoInput("Do you still want to search in this region?") ) {
+				if (! Fn.UserInput.readYesNoInput("Do you still want to search in this region?") ) {
 					return false;
 				}
 				currSearch++;
 			}
+			// max number of searches reached
+			// immediately get artifact
+			this.foundArtifact(GameData.player);
 			return true;
 		}
 
@@ -114,8 +117,6 @@ public class Locations {
 			UI.printSearchGrid(grid);
 			int searchValue = resolveGrid(grid);
 			UI.print(String.format("Your search value is %d.", searchValue));
-			int searchResult = Results.resolveSearchValue(searchValue);
-
 
 			resolveSearchResult(searchValue);
 		}
@@ -139,20 +140,20 @@ public class Locations {
 			switch (searchResult) {
 				case Results.ENCOUNTER:
 					int encounterLevel = Results.encounterLevel(searchValue);
-					Monsters.Monster enemy = GameData.player.getLocation().getMonster(encounterLevel);
+					Monsters.Monster enemy = this.getMonster(encounterLevel);
 					enemy.combat();
 					break;
 				case Results.COMPONENT:
-					GameData.player.getLocation().foundComponent(GameData.player, 1);
+					this.foundComponent(GameData.player, 1);
 					break;
 				case Results.INACTIVE_ARTIFACT:
-					GameData.player.getLocation().foundArtifact(GameData.player);
+					this.foundArtifact(GameData.player);
 					break;
 			}
 		}
 	}
 
-	protected static class WildernessZero extends LocationClass {
+	static class WildernessZero extends LocationClass {
 		WildernessZero() {
 			super();
 			this.name = "Halebeard Peak";
@@ -173,7 +174,7 @@ public class Locations {
 		}
 	}
 
-	protected static class WildernessOne extends LocationClass {
+	static class WildernessOne extends LocationClass {
 		WildernessOne() {
 			super();
 			this.name = "The Great Wilds";
@@ -184,7 +185,7 @@ public class Locations {
 		}
 	}
 
-	protected static class WildernessTwo extends LocationClass {
+	static class WildernessTwo extends LocationClass {
 		WildernessTwo() {
 			super();
 			this.name = "Root-Strangled Marshes";
@@ -195,7 +196,7 @@ public class Locations {
 		}
 	}
 
-	protected static class WildernessThree extends LocationClass {
+	static class WildernessThree extends LocationClass {
 		WildernessThree() {
 			super();
 			this.name = "Glassrock Canyon";
@@ -206,7 +207,7 @@ public class Locations {
 		}
 	}
 
-	protected static class WildernessFour extends LocationClass {
+	static class WildernessFour extends LocationClass {
 		WildernessFour() {
 			super();
 			this.name = "Ruined City of the Ancients";
@@ -217,7 +218,7 @@ public class Locations {
 		}
 	}
 
-	protected static class WildernessFive extends LocationClass {
+	static class WildernessFive extends LocationClass {
 		WildernessFive() {
 			super();
 			this.name = "The Fiery Maw";
@@ -228,7 +229,7 @@ public class Locations {
 		}
 	}
 
-	protected static class Workshop extends LocationClass {
+	static class Workshop extends LocationClass {
 		Workshop() {
 			super();
 			this.name = "Workshop";
@@ -236,7 +237,7 @@ public class Locations {
 		}
 	}
 
-	protected static class RegionIndex {
+	static class RegionIndex {
 		private RegionIndex(){}
 		public final static int ZERO = 0;
 		public final static int ONE = 1;

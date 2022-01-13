@@ -1,6 +1,6 @@
 package files;
 
-import gameui.UI;
+import files.gameui.UI;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,13 +21,14 @@ public class Player {
 	private int[] toolBelt = new int[PlayerConstants.TYPES_OF_TOOLS];
 	private HashMap<Integer, Boolean> effectsInPlace = new HashMap<>();
 
-	protected static class PlayerConstants {
+	static class PlayerConstants {
 		private PlayerConstants(){}
 		public final static int MAX_HP = 6;
 
 		public final static int TYPES_OF_MATERIALS = 6;
-		protected static class Materials {
+		static class Materials {
 			private Materials(){}
+			public final static int CAPACITY = 4;
 			public final static int ZERO = 0;
 			public final static int ONE = 1;
 			public final static int TWO = 2;
@@ -54,6 +55,7 @@ public class Player {
 
 	@Override
 	public String toString() {
+		//noinspection StringBufferReplaceableByString
 		StringBuilder s = new StringBuilder();
 		s.append("Player info:").append(System.lineSeparator());
 		s.append("Location: ").append(location.getName()).append(System.lineSeparator());
@@ -87,17 +89,21 @@ public class Player {
 		this.setLocation(HOME);
 	}
 
+	int getHp() {
+		return this.hp;
+	}
+
 	void receiveDamage(int i) {
 		this.hp -= i;
 		if (this.hp == 0) {
 			// player faints
 			// teleports back to workshop
 			// rest for 6 days to recover to full hp
-			this.rest(PlayerConstants.MAX_HP);
-			this.goHome();
+			this.fullRest();
 		}
 		else if (this.hp < 0) {
 			// player died
+			// to implement for final activation
 			this.hp = -10; // placeholder assignment
 		}
 	}
@@ -107,7 +113,10 @@ public class Player {
 	}
 
 	void getOneComponent(int i) {
-		this.stores[i] += 1;
+		if (this.stores[i] < PlayerConstants.Materials.CAPACITY) {
+			this.stores[i] += 1;
+		}
+		UI.print("You already have the maximum quantity for this component.");
 	}
 
 	void getTreasure(Treasures.Treasure treasure) {
@@ -140,6 +149,12 @@ public class Player {
 		if (hp > PlayerConstants.MAX_HP) {
 			hp = PlayerConstants.MAX_HP;
 		}
+	}
+
+	void fullRest() {
+		this.goHome();
+		this.rest(PlayerConstants.MAX_HP);
+		UI.print("You rest for six days to recover from the combat");
 	}
 
 	public static void main (String[] args) {

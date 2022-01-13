@@ -1,13 +1,13 @@
 package files;
 
-import gameui.UI;
+import files.gameui.UI;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class Monsters {
-	protected interface Monster {
+	interface Monster {
 		void setLocation(Locations.Location location);
 		void combat();
 		void checkDroppedItem();
@@ -40,10 +40,13 @@ public class Monsters {
 				UI.print(String.format("You rolled %d and %d", rolls[0], rolls[1]));
 				for (int roll : rolls) {
 					if (roll >= monsterAttackRange[0] && roll <= monsterAttackRange[1]) {
-						GameData.player.receiveDamage(1);
-						UI.print(String.format("Monster attacked on roll %d and you lose 1 hp.", roll));
-						if (!GameData.player.getLocation().equals(this.locatedAt)) {
-							// player fainted and travelled home
+						if (GameData.player.getHp() > 1) {
+							GameData.player.receiveDamage(1);
+							UI.print(String.format("Monster attacked on roll %d and you lose 1 hp.", roll));
+						}
+						else {
+							UI.print("Combat ended");
+							GameData.player.receiveDamage(1);
 							break;
 						}
 					}
@@ -60,6 +63,7 @@ public class Monsters {
 
 		@Override
 		public void checkDroppedItem() {
+			UI.print("Checking for dropped item from Monster.");
 			int roll = new Random().nextInt(6) + 1;
 			if (roll <= this.level) {
 				// player loots dropped item
@@ -73,7 +77,7 @@ public class Monsters {
 		}
 	}
 
-	protected static class RegionZeroMonsters extends MonsterClass {
+	static class RegionZeroMonsters extends MonsterClass {
 		private static class MonsterZeroOne extends MonsterClass {
 			MonsterZeroOne() {
 				this.inRegion = Locations.RegionIndex.ZERO;
@@ -129,7 +133,7 @@ public class Monsters {
 			}
 		}
 
-		protected static List<Monster> getMonsters() {
+		static List<Monster> getMonsters() {
 			List<Monster> monsters = new ArrayList<>();
 			monsters.add(new MonsterZeroOne());
 			monsters.add(new MonsterZeroTwo());
