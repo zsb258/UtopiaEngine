@@ -19,6 +19,10 @@ public class UI {
 		System.out.println(msg);
 	}
 
+	public static void fPrintNum(String msg, int val) {
+		print(String.format(msg, val));
+	}
+
 	public static void printGameFailed() {
 		print("Doomsday has come.");
 		print("You failed to build the Utopia Engine.");
@@ -38,4 +42,9 @@ public class UI {
 		catch (InterruptedException ignored) {}
 	}
 
+	public static void main(String[] args) {
+//		for (int i = 0; i < 10; i++) {
+//			UI.fPrintNum("You have placed the digit %d", i);
+//		}
+	}
 }

@@ -30,7 +30,7 @@ public class Locations {
 		@Override
 		public void foundComponent(Player player, int num) {
 			for (int i = 0; i < num; i++) {
-				player.getOneComponent(component);
+				player.obtainOneComponent(component);
 			}
 			UI.print(String.format("You gained %d %s.",
 					num, Player.PlayerConstants.Materials.toName(component)));

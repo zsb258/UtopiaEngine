@@ -20,6 +20,8 @@ public class Player {
 	private int[] stores = new int[PlayerConstants.TYPES_OF_MATERIALS];
 	private int[] toolBelt = new int[PlayerConstants.TYPES_OF_TOOLS];
 	private HashMap<Integer, Boolean> effectsInPlace = new HashMap<>();
+	private int[] wastebasket = new int[10];
+	private int wasteFilled = 0;
 
 	static class PlayerConstants {
 		private PlayerConstants(){}
@@ -93,8 +95,10 @@ public class Player {
 		return this.hp;
 	}
 
-	void receiveDamage(int i) {
+	void receiveDamage(int i, String source) {
 		this.hp -= i;
+		UI.print(String.format("You lost %d HP from %s.", i, source));
+		UI.print(String.format("You are now at %d HP.", this.getHp()));
 		if (this.hp == 0) {
 			// player faints
 			// teleports back to workshop
@@ -112,11 +116,24 @@ public class Player {
 		return this.hp > 0;
 	}
 
-	void getOneComponent(int i) {
-		if (this.stores[i] < PlayerConstants.Materials.CAPACITY) {
-			this.stores[i] += 1;
+	int getComponentCount(int type) {
+		return this.stores[type];
+	}
+
+	void obtainOneComponent(int type) {
+		if (this.stores[type] < PlayerConstants.Materials.CAPACITY) {
+			this.stores[type] += 1;
+			return;
 		}
 		UI.print("You already have the maximum quantity for this component.");
+	}
+
+	void spendOneComponent(int type) {
+		if (this.stores[type] > 0) {
+			this.stores[type] -= 1;
+			return;
+		}
+		UI.print("You do not have sufficient quantity of this component.");
 	}
 
 	void getTreasure(Treasures.Treasure treasure) {
@@ -155,6 +172,28 @@ public class Player {
 		this.goHome();
 		this.rest(PlayerConstants.MAX_HP);
 		UI.print("You rest for six days to recover from the combat");
+	}
+
+	void addToWaste(int val) {
+		if (wasteFilled <= 9) {
+			wastebasket[wasteFilled] = val;
+			wasteFilled++;
+			UI.print(String.format("You have discarded %d.", val));
+			printWaste();
+		}
+	}
+
+	void printWaste() {
+		UI.immediatePrint("Wastebasket:");
+		StringBuilder s = new StringBuilder();
+		for (int i = 0; i < wastebasket.length; i++) {
+			if (i == 5) {
+				s.append(UI.SEP);
+			}
+			int val = wastebasket[i];
+			s.append("[").append(val != 0 ? val : " ").append("]");
+		}
+		UI.immediatePrint(s.toString());
 	}
 
 	public static void main (String[] args) {

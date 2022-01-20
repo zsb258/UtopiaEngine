@@ -13,3 +13,4 @@ out/*
 # Reference files
 Game Rules/*
 
+*.class

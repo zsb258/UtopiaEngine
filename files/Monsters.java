@@ -40,17 +40,18 @@ public class Monsters {
 				UI.print(String.format("You rolled %d and %d", rolls[0], rolls[1]));
 				for (int roll : rolls) {
 					if (roll >= monsterAttackRange[0] && roll <= monsterAttackRange[1]) {
+						UI.print(String.format("Monster attacks on roll %d.", roll));
 						if (GameData.player.getHp() > 1) {
-							GameData.player.receiveDamage(1);
-							UI.print(String.format("Monster attacked on roll %d and you lose 1 hp.", roll));
+							GameData.player.receiveDamage(1, "Monster's attack");
 						}
 						else {
 							UI.print("Combat ended");
-							GameData.player.receiveDamage(1);
+							GameData.player.receiveDamage(1, "Monster's attack");
 							break;
 						}
 					}
 					if (roll >= playerAttackRange[0] && roll <= playerAttackRange[1]) {
+						UI.print(String.format("You attacked on roll %d.", roll));
 						combatEnded = true;
 					}
 				}
