@@ -7,15 +7,17 @@ import files.Fn.UserInput;
 import java.util.Arrays;
 
 public class Artifacts {
+
 	interface Artifact {
 		void foundByPlayer();
 		void activateArtifact();
 		String getName();
 		boolean isActivated();
 		void setActivated();
+		boolean notFound();
 	}
 
-	private static class ArtifactClass implements Artifact {
+	private static class ArtifactImpl implements Artifact {
 		String name = "Artifact name";
 		String effect;
 		int inRegion;
@@ -47,9 +49,14 @@ public class Artifacts {
 		public void setActivated() {
 			this.activated = true;
 		}
+
+		@Override
+		public boolean notFound() {
+			return !this.found;
+		}
 	}
 
-	static class ArtifactZero extends ArtifactClass {
+	static class ArtifactZero extends ArtifactImpl {
 		ArtifactZero() {
 			super();
 			name = "Seal of Balance";
@@ -60,7 +67,7 @@ public class Artifacts {
 		}
 	}
 
-	static class ArtifactOne extends ArtifactClass {
+	static class ArtifactOne extends ArtifactImpl {
 		ArtifactOne() {
 			super();
 			name = "Hermetic Mirror";
@@ -69,7 +76,7 @@ public class Artifacts {
 		}
 	}
 
-	static class ArtifactTwo extends ArtifactClass {
+	static class ArtifactTwo extends ArtifactImpl {
 		ArtifactTwo() {
 			super();
 			name = "Void Gate";
@@ -78,7 +85,7 @@ public class Artifacts {
 		}
 	}
 
-	static class ArtifactThree extends ArtifactClass {
+	static class ArtifactThree extends ArtifactImpl {
 		ArtifactThree() {
 			super();
 			name = "Golden Chassis";
@@ -87,7 +94,7 @@ public class Artifacts {
 		}
 	}
 
-	static class ArtifactFour extends ArtifactClass {
+	static class ArtifactFour extends ArtifactImpl {
 		ArtifactFour() {
 			super();
 			name = "Scrying Lens";
@@ -96,7 +103,7 @@ public class Artifacts {
 		}
 	}
 
-	static class ArtifactFive extends ArtifactClass {
+	static class ArtifactFive extends ArtifactImpl {
 		ArtifactFive() {
 			super();
 			name = "Crystal Battery";
@@ -234,13 +241,16 @@ public class Artifacts {
 		}
 	}
 
-	static class ArtifactConnector {
+	interface ArtifactConnector {}
+
+	private static class ArtifactConnectorImpl implements ArtifactConnector {
 		int requiredCompt;
+		Artifact artifact1, artifact2;
 		char[] grid;
 		boolean[] result;
 		boolean toTerminate = false;
 
-		ArtifactConnector() {
+		private ArtifactConnectorImpl() {
 			grid = this.emptyResultGrid();
 			result = new boolean[3];
 			Arrays.fill(result, false);
@@ -249,7 +259,25 @@ public class Artifacts {
 			requiredCompt = PLACEHOLDER_VALUE;
 		}
 
-		void runActivation() {
+		void runConnection() {
+			UI.print("Attempting connection...");
+			if (artifact1.notFound() || artifact2.notFound()) {
+				// cannot start connection if either artifact is not found
+				if (artifact1.notFound() && artifact2.notFound()) {
+					UI.print(String.format(
+							"Unable to start connection because you have not found %s and %s.",
+							artifact1.getName(), artifact2.getName()));
+				} else if (artifact1.notFound()) {
+					UI.print(String.format(
+							"Unable to start connection because you have not found %s.",
+							artifact1.getName()));
+				} else if (artifact2.notFound()) {
+					UI.print(String.format(
+							"Unable to start connection because you have not found %s.",
+							artifact2.getName()));
+				}
+				return;
+			}
 			UI.print("Starting Connection...");
 			while (!isFilled()) {
 				int[] rolls = Dice.rollTwoAndShow();
@@ -258,6 +286,10 @@ public class Artifacts {
 					return;
 				}
 			}
+			int val = resolveGrid();
+			UI.fPrintNum("The difficulty level of the " +
+					"Final Activation has increased by %d.", val);
+			GameData.player.addFinalDifficulty(val);
 		}
 
 		void fillTwo(int[] rolls) {
@@ -335,6 +367,14 @@ public class Artifacts {
 			}
 		}
 
+		int resolveGrid() {
+			int res = 0;
+			for (int i = grid.length - 1; i >= grid.length - 3; i--) {
+				res += grid[i] - '0';
+			}
+			return res;
+		}
+
 		char[] emptyResultGrid() {
 			char[] res = new char[9];
 			Arrays.fill(res, '_');
@@ -361,7 +401,23 @@ public class Artifacts {
 		}
 	}
 
+	static class ConnectorZero extends ArtifactConnectorImpl {
+
+		ConnectorZero() {
+			super();
+			// Seal of Balance
+			this.artifact1 = GameData.gameMap.get(0).getArtifact();
+
+			// Golden Chassis
+			this.artifact2 = GameData.gameMap.get(3).getArtifact();
+
+			// Quartz
+			this.requiredCompt = Player.PlayerConstants.Materials.QUARTZ;
+		}
+
+	}
+
 	public static void main(String[] args) {
-		new ArtifactConnector().runActivation();
+
 	}
 }

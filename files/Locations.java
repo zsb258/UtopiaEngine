@@ -14,9 +14,10 @@ public class Locations {
 		Monsters.Monster getMonster(int level);
 		String getName();
 		boolean regionSearch();
+		Artifacts.Artifact getArtifact();
 	}
 
-	static class LocationClass implements Location {
+	static class LocationImpl implements Location {
 		String name;
 		int component;
 		int index;
@@ -72,7 +73,7 @@ public class Locations {
 		public boolean regionSearch() {
 			int currSearch = 0;
 			while (currSearch < MAX_SEARCHES) {
-				singleSearch();
+				new SingleSearch(this).run();
 				if (! Fn.UserInput.readYesNoInput("Do you still want to search in this region?") ) {
 					return false;
 				}
@@ -84,76 +85,14 @@ public class Locations {
 			return true;
 		}
 
-		void singleSearch() {
-			Random dice = new Random();
-			char[] grid = emptyResultGrid();
-
-			Scanner in = new Scanner(System.in);
-			for (int rolls = 0; rolls < 3; rolls++) {
-				int firstRoll = dice.nextInt(6) + 1;
-				int secondRoll = dice.nextInt(6) + 1;
-				int firstPos, secondPos;
-
-				while (true) {
-					UI.printSearchGrid(grid);
-					UI.print(String.format("You rolled %d and %d", firstRoll, secondRoll));
-					System.out.println("Please enter two positions to fill grid:");
-
-					firstPos = in.nextInt() - 1;
-					secondPos = in.nextInt() - 1;
-
-					if (firstPos >= 0 && firstPos < 6 && secondPos >= 0 && secondPos < 6) {
-						if (grid[firstPos] == '_' && grid[secondPos] == '_') {
-							break;
-						}
-					}
-					System.out.println("Your inputs are invalid.");
-				}
-
-				grid[firstPos] = (char) (firstRoll + '0');
-				grid[secondPos] = (char) (secondRoll + '0');
-			}
-
-			UI.printSearchGrid(grid);
-			int searchValue = resolveGrid(grid);
-			UI.print(String.format("Your search value is %d.", searchValue));
-
-			resolveSearchResult(searchValue);
+		@Override
+		public Artifacts.Artifact getArtifact() {
+			return this.artifact;
 		}
 
-		char[] emptyResultGrid() {
-			char[] res = new char[6];
-			Arrays.fill(res, '_');
-			return res;
-		}
-
-		int resolveGrid(char[] grid) {
-			int firstNum = (grid[0] - '0') * 100 + (grid[1] - '0') * 10 + (grid[2] - '0');
-			int secondNum = (grid[3] - '0') * 100 + (grid[4] - '0') * 10 + (grid[5] - '0');
-			return firstNum - secondNum;
-		}
-
-		void resolveSearchResult(int searchValue) {
-			int searchResult = Results.resolveSearchValue(searchValue);
-			UI.print(String.format("Your search yields %s.", Results.toName(searchResult)));
-			//noinspection EnhancedSwitchMigration
-			switch (searchResult) {
-				case Results.ENCOUNTER:
-					int encounterLevel = Results.encounterLevel(searchValue);
-					Monsters.Monster enemy = this.getMonster(encounterLevel);
-					enemy.combat();
-					break;
-				case Results.COMPONENT:
-					this.foundComponent(GameData.player, 1);
-					break;
-				case Results.INACTIVE_ARTIFACT:
-					this.foundArtifact(GameData.player);
-					break;
-			}
-		}
 	}
 
-	static class WildernessZero extends LocationClass {
+	static class WildernessZero extends LocationImpl {
 		WildernessZero() {
 			super();
 			this.name = "Halebeard Peak";
@@ -174,7 +113,7 @@ public class Locations {
 		}
 	}
 
-	static class WildernessOne extends LocationClass {
+	static class WildernessOne extends LocationImpl {
 		WildernessOne() {
 			super();
 			this.name = "The Great Wilds";
@@ -185,7 +124,7 @@ public class Locations {
 		}
 	}
 
-	static class WildernessTwo extends LocationClass {
+	static class WildernessTwo extends LocationImpl {
 		WildernessTwo() {
 			super();
 			this.name = "Root-Strangled Marshes";
@@ -196,7 +135,7 @@ public class Locations {
 		}
 	}
 
-	static class WildernessThree extends LocationClass {
+	static class WildernessThree extends LocationImpl {
 		WildernessThree() {
 			super();
 			this.name = "Glassrock Canyon";
@@ -207,7 +146,7 @@ public class Locations {
 		}
 	}
 
-	static class WildernessFour extends LocationClass {
+	static class WildernessFour extends LocationImpl {
 		WildernessFour() {
 			super();
 			this.name = "Ruined City of the Ancients";
@@ -218,7 +157,7 @@ public class Locations {
 		}
 	}
 
-	static class WildernessFive extends LocationClass {
+	static class WildernessFive extends LocationImpl {
 		WildernessFive() {
 			super();
 			this.name = "The Fiery Maw";
@@ -229,7 +168,7 @@ public class Locations {
 		}
 	}
 
-	static class Workshop extends LocationClass {
+	static class Workshop extends LocationImpl {
 		Workshop() {
 			super();
 			this.name = "Workshop";
@@ -246,6 +185,84 @@ public class Locations {
 		public final static int FOUR = 4;
 		public final static int FIVE = 5;
 		public final static int WORKSHOP = 6;
+	}
+
+	static class SingleSearch {
+		Location location;
+		char[] grid;
+		int searchValue;
+
+		SingleSearch(Location location) {
+			this.location = location;
+			grid = emptyResultGrid();
+		}
+
+		void run() {
+			for (int i = 0; i < 3; i++) {
+				int[] rolls, inputs;
+
+				while (true) {
+					printSearchGrid();
+					rolls = Fn.Dice.rollTwoAndShow();
+					System.out.println("Please enter two positions to fill grid:");
+					inputs = Fn.UserInput.readTwoDigitsInput(
+							"Please enter two positions to fill grid:", 1, 6);
+
+					if (inputs[0] >= 0 && inputs[0] < 6 && inputs[1] >= 0 && inputs[1] < 6) {
+						if (grid[inputs[0]] == '_' && grid[inputs[1]] == '_') {
+							break;
+						}
+					}
+					System.out.println("Your inputs are invalid.");
+				}
+
+				grid[inputs[0]] = (char) (rolls[0] + '0');
+				grid[inputs[1]] = (char) (rolls[1] + '0');
+			}
+
+			printSearchGrid();
+			searchValue = resolveGrid();
+			UI.fPrintNum("Your search value is %d.", searchValue);
+
+			resolveSearchResult();
+		}
+
+		char[] emptyResultGrid() {
+			char[] res = new char[6];
+			Arrays.fill(res, '_');
+			return res;
+		}
+
+		void printSearchGrid() {
+			String gridString = String.format("[%c] [%c] [%c]%n(%d) (%d) (%d)%n[%c] [%c] [%c]%n(%d) (%d) (%d)",
+					grid[0], grid[1], grid[2], 1, 2, 3, grid[3], grid[4], grid[5], 4, 5, 6);
+			UI.immediatePrint(gridString);
+		}
+
+		int resolveGrid() {
+			int firstNum = (grid[0] - '0') * 100 + (grid[1] - '0') * 10 + (grid[2] - '0');
+			int secondNum = (grid[3] - '0') * 100 + (grid[4] - '0') * 10 + (grid[5] - '0');
+			return firstNum - secondNum;
+		}
+
+		void resolveSearchResult() {
+			int searchResult = Results.resolveSearchValue(searchValue);
+			UI.print(String.format("Your search yields %s.", Results.toName(searchResult)));
+			//noinspection EnhancedSwitchMigration
+			switch (searchResult) {
+				case Results.ENCOUNTER:
+					int encounterLevel = Results.encounterLevel(searchValue);
+					Monsters.Monster enemy = location.getMonster(encounterLevel);
+					enemy.combat();
+					break;
+				case Results.COMPONENT:
+					location.foundComponent(GameData.player, 1);
+					break;
+				case Results.INACTIVE_ARTIFACT:
+					location.foundArtifact(GameData.player);
+					break;
+			}
+		}
 	}
 
 	static class Results {

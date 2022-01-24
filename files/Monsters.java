@@ -13,7 +13,7 @@ public class Monsters {
 		void checkDroppedItem();
 	}
 
-	private static class MonsterClass implements Monster {
+	private static class MonsterImpl implements Monster {
 		int inRegion = 0;
 		Locations.Location locatedAt;
 		int level = 6;
@@ -78,8 +78,8 @@ public class Monsters {
 		}
 	}
 
-	static class RegionZeroMonsters extends MonsterClass {
-		private static class MonsterZeroOne extends MonsterClass {
+	static class RegionZeroMonsters extends MonsterImpl {
+		private static class MonsterZeroOne extends MonsterImpl {
 			MonsterZeroOne() {
 				this.inRegion = Locations.RegionIndex.ZERO;
 				this.level = 1;
@@ -89,7 +89,7 @@ public class Monsters {
 			}
 		}
 
-		private static class MonsterZeroTwo extends MonsterClass {
+		private static class MonsterZeroTwo extends MonsterImpl {
 			MonsterZeroTwo() {
 				this.inRegion = Locations.RegionIndex.ZERO;
 				this.level = 2;
@@ -99,7 +99,7 @@ public class Monsters {
 			}
 		}
 
-		private static class MonsterZeroThree extends MonsterClass {
+		private static class MonsterZeroThree extends MonsterImpl {
 			MonsterZeroThree() {
 				this.inRegion = Locations.RegionIndex.ZERO;
 				this.level = 3;
@@ -109,7 +109,7 @@ public class Monsters {
 			}
 		}
 
-		private static class MonsterZeroFour extends MonsterClass {
+		private static class MonsterZeroFour extends MonsterImpl {
 			MonsterZeroFour() {
 				this.inRegion = Locations.RegionIndex.ZERO;
 				this.level = 4;
@@ -119,7 +119,7 @@ public class Monsters {
 			}
 		}
 
-		private static class MonsterZeroFive extends MonsterClass {
+		private static class MonsterZeroFive extends MonsterImpl {
 			Treasures.Treasure treasure;
 			MonsterZeroFive() {
 				this.inRegion = Locations.RegionIndex.ZERO;

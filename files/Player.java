@@ -22,6 +22,7 @@ public class Player {
 	private HashMap<Integer, Boolean> effectsInPlace = new HashMap<>();
 	private int[] wastebasket = new int[10];
 	private int wasteFilled = 0;
+	private int finalThreshold = 0;
 
 	static class PlayerConstants {
 		private PlayerConstants(){}
@@ -32,11 +33,17 @@ public class Player {
 			private Materials(){}
 			public final static int CAPACITY = 4;
 			public final static int ZERO = 0;
+			public final static int SILVER = ZERO;
 			public final static int ONE = 1;
+			public final static int QUARTZ = ONE;
 			public final static int TWO = 2;
+			public final static int SILICA = TWO;
 			public final static int THREE = 3;
+			public final static int GUM = THREE;
 			public final static int FOUR = 4;
+			public final static int WAX = FOUR;
 			public final static int FIVE = 5;
+			public final static int LEAD = FIVE;
 
 			static String toName(int i) {
 				//noinspection EnhancedSwitchMigration
@@ -194,6 +201,16 @@ public class Player {
 			s.append("[").append(val != 0 ? val : " ").append("]");
 		}
 		UI.immediatePrint(s.toString());
+	}
+
+	void addFinalDifficulty(int val) {
+		this.finalThreshold += val;
+		UI.fPrintNum("The difficulty level of the " +
+				"Final Activation has increased by %d.", val);
+	}
+
+	int getFinalDifficulty() {
+		return this.finalThreshold;
 	}
 
 	public static void main (String[] args) {

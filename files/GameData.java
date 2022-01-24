@@ -13,6 +13,9 @@ public class GameData {
 		initialiseLocations();
 	}
 
+	/**
+	 * to add all possible locations into GameMap
+	 */
 	void initialiseLocations() {
 		gameMap.add(new Locations.WildernessZero());
 		gameMap.add(new Locations.WildernessOne());
@@ -69,6 +72,7 @@ public class GameData {
 
 	public static void main(String[] args) {
 		// test run
-		new GameData().start();
+		new GameData();
+		new Artifacts.ConnectorZero().runConnection();
 	}
 }
